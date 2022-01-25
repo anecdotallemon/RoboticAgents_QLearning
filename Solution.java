@@ -1,7 +1,11 @@
 
 public class Solution {
-	String[][] solution = new String[15][10];
+	private String[][] solution = new String[15][10];
 	
+	/**
+	 * Constructor for Solution class, initializes all values to "." and
+	 * the goal at 12, 7.
+	 */
 	public Solution() {
 		for (int i = 0; i < 15; i++) {
 			for (int j = 0; j < 10; j++) {
@@ -12,6 +16,11 @@ public class Solution {
 	}
 	
 	
+	/**
+	 * This method sets the starting position on the solution board.
+	 * @param x the x coordinate
+	 * @param y the y coordinate
+	 */
 	public void setStart(int x, int y) {
 		solution[x][y] = "S";
 	}
@@ -53,7 +62,9 @@ public class Solution {
 		}
 	}
 	
-	
+	/**
+	 * This method prints the solution board to the console.
+	 */
 	public void printSolution() {
 		System.out.println("Here is an optimal path to take to get to the reward. Multiple paths may exist.");
 		for (int i = 0; i < 10; i++) {

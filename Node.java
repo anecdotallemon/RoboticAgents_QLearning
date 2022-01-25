@@ -1,42 +1,23 @@
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.PrintWriter;
+import java.util.ArrayList;
+import java.util.Scanner;
 
 public class Node {
-	/* five double arrays - each holding action + state
-	 * need 5 arrays (2d) to encode the q table, and reward needs 5 more arrays
-	 * playgame method has agent move around randomly and update q table as it moves
-	 * 		and one more method that executes the best path from the learned q table
-	 * for getting out of the playgame, possibly have some sort of metric that adds 
-	 * 		all the boxes together and after each generation, check to see how much it changed
-	 * may want to write your q table to a file or something, save it locally, so that 
-	 * 		you can reload it later when you want to run the game again so you don't have to 
-	 * 		constantly save it
-	 */
-	
-	double[][] qLearningDown = new double[15][10]; // 2
-	double[][] qLearningUp = new double[15][10]; // 1
-	double[][] qLearningLeft = new double[15][10]; // 3
-	double[][] qLearningRight = new double[15][10]; // 4
-	double[][] qLearningStay = new double[15][10]; // 0
+	private double[][] qLearningDown = new double[15][10]; // 2
+	private double[][] qLearningUp = new double[15][10]; // 1
+	private double[][] qLearningLeft = new double[15][10]; // 3
+	private double[][] qLearningRight = new double[15][10]; // 4
+	private double[][] qLearningStay = new double[15][10]; // 0
 	int x = 1;
 	int y = 5;
 	
-	State state = new State();
+	private State state = new State();
 	
-	// storing trajectory?
-	// reward function
-	// value of reward - this would be in state possibly
-	// choose a discount factor
-	// q learning score = reward for the action + discounted maximum award of the next possible actions
-	
-	
-	/*
-	 * Problem set up
-	 * Agent spawns in a given location
-	 * Agent can move up, down, left, right, or stay
-	 * Goal is to maximize reward
-	 * Stop when the goal is reached (100)
-	 * Given state, take random actions and calculate q value
+	/**
+	 * Constructor for the Node class.
 	 */
-	
 	public Node() {
 		
 	}
@@ -48,11 +29,7 @@ public class Node {
 	 * @return int the integer representation of the action with the best Q value
 	 */
 	public int getBestAction() {
-		
-		// TODO: Pull from possibleActions()
-		
 		double bestAction = Math.max(Math.max(qLearningDown[this.x][this.y], qLearningUp[this.x][this.y]), Math.max(qLearningLeft[this.x][this.y], Math.max(qLearningRight[this.x][this.y], qLearningStay[this.x][this.y])));
-//		System.out.println("Inside getBestAction(), best action is " + bestAction);
 		if (bestAction == qLearningUp[this.x][this.y]) {
 			return 1;
 		}
@@ -72,9 +49,32 @@ public class Node {
 	}	
 	
 	
+	/**
+	 * This method gets an array of the possible actions that can be taken
+	 * from the current node's coordinates.
+	 * @return an integer array of possible actions where 0 indicates stay, 1 indicates up,
+	 * 2 indicates down, 3 indicates left, and 4 indicates right.
+	 */
 	public int[] possibleActions() {
-		// TODO: Change this to actually just the valid actions
-		int[] actions = new int[]{0,1,2,3,4};
+		ArrayList<Integer> validNums = new ArrayList<>();
+		validNums.add(0);
+		if (this.y > 0) {
+			validNums.add(1);
+		}
+		if (this.y < 9) {
+			validNums.add(2);
+		}
+		if (this.x > 0) {
+			validNums.add(3);
+		}
+		if (this.x < 14) {
+			validNums.add(4);
+		}
+		int numValid = validNums.size();
+		int[] actions = new int[numValid];
+		for (int i = 0; i < validNums.size(); i++) {
+			actions[i] = validNums.get(i);
+		}
 		return actions;
 	}
 	
@@ -105,13 +105,10 @@ public class Node {
 		double futureReward = 0;
 		int futureX = a;
 		int futureY = b;
-		
-		// stay in place
 		if (move == 0) {
 			rewardValue = state.getStateRewardStay(a, b);
 			futureReward = futureMax(futureX, futureY);
 		}
-		// go up
 		else if (move == 1) {
 			rewardValue = state.getStateRewardUp(a, b);
 			if (b > 0) {
@@ -119,7 +116,6 @@ public class Node {
 			}
 			futureReward = futureMax(futureX, futureY);
 		}
-		// go down
 		else if (move == 2) {
 			rewardValue = state.getStateRewardDown(a, b);
 			if (b < 9) {
@@ -127,7 +123,6 @@ public class Node {
 			}
 			futureReward = futureMax(futureX, futureY);
 		}
-		// go left
 		else if (move == 3) {
 			rewardValue = state.getStateRewardLeft(a, b);
 			if (a > 0) {
@@ -135,7 +130,6 @@ public class Node {
 			}
 			futureReward = futureMax(futureX, futureY);
 		}
-		// go right
 		else {
 			rewardValue = state.getStateRewardRight(a, b);
 			if (a < 14) {
@@ -143,7 +137,7 @@ public class Node {
 			}
 			futureReward = futureMax(futureX, futureY);
 		}
-		double qValue = rewardValue + (0.9 * futureReward);
+		double qValue = rewardValue + (0.85 * futureReward);
 		updateQValue(x, y, qValue, move);
 		return qValue;
 	}
@@ -156,12 +150,11 @@ public class Node {
 	 * @param b the y coordinate
 	 * @return double the future maximum Q value
 	 */
-	public double futureMax(int a, int b) {		
+	private double futureMax(int a, int b) {		
 		double[] futureRewards = new double[5];
 		Node newNode = new Node();
 		newNode.x = a;
 		newNode.y = b;
-		// TODO: May need to update this when possibleActions() is changed
 		int[] move = newNode.possibleActions();
 		double futureReward = 0;
 		for (int i = 0; i < move.length; i++) {
@@ -254,6 +247,9 @@ public class Node {
 	}
 	
 	
+	/**
+	 * Prints the Q table of values for the Stay action.
+	 */
 	public void printQTableStay() {
 		for (int i = 0; i < 10; i++) {
 			for (int j = 0; j < 15; j++) {
@@ -263,6 +259,9 @@ public class Node {
 		}
 	}
 	
+	/**
+	 * Prints the Q table of values for the Up action.
+	 */
 	public void printQTableUp() {
 		for (int i = 0; i < 10; i++) {
 			for (int j = 0; j < 15; j++) {
@@ -272,6 +271,9 @@ public class Node {
 		}
 	}
 	
+	/**
+	 * Prints the Q table of values for the Down action.
+	 */
 	public void printQTableDown() {
 		for (int i = 0; i < 10; i++) {
 			for (int j = 0; j < 15; j++) {
@@ -281,6 +283,9 @@ public class Node {
 		}
 	}
 	
+	/**
+	 * Prints the Q table of values for the Left action.
+	 */
 	public void printQTableLeft() {
 		for (int i = 0; i < 10; i++) {
 			for (int j = 0; j < 15; j++) {
@@ -290,6 +295,9 @@ public class Node {
 		}
 	}
 	
+	/**
+	 * Prints the Q table of values for the Right action.
+	 */
 	public void printQTableRight() {
 		for (int i = 0; i < 10; i++) {
 			for (int j = 0; j < 15; j++) {
@@ -300,6 +308,79 @@ public class Node {
 	}
 	
 	
-	
-	
+	/**
+	 * This method writes the current Q Tables to a new file.
+	 * @param filename the name of the file to be created - should not include .txt
+	 * @throws FileNotFoundException if the file cannot be created
+	 */
+	public void writeQTablesToFile(String filename) throws FileNotFoundException {
+		File file = null;
+		try {
+			file = new File(filename + ".txt");
+			if (file.createNewFile()) {
+		        System.out.println("File created: " + file.getName());
+		      } else {
+		        System.out.println("File already exists, would you like to overwrite the file, yes or no?");
+		        Scanner scan = new Scanner(System.in);
+		        String input = scan.nextLine().toLowerCase();
+		        scan.close();
+		        System.out.println("Your input was: " + input);
+		        if (input.contentEquals("yes") || input.contentEquals("yeah") || input.contentEquals("yep") || input.contentEquals("yup") || input.contentEquals("just write to the file already")) {
+		        	System.out.println("I understand that you wish to overwrite the file.");
+		        }
+		        else {
+		        	System.out.println("I understand you do not wish to overwrite the file.");
+		        	return;
+		        }
+		        
+		      }
+		} catch (Exception e) {
+			System.out.println("There was an error creating the file.");
+			e.printStackTrace();
+		}
+		PrintWriter writer = new PrintWriter(file);
+		StringBuilder text = new StringBuilder();
+		text.append("Stay\n");
+		for (int i = 0; i < 10; i++) {
+			for (int j = 0; j < 15; j++) {
+				text.append(String.format("%.2f", qLearningStay[j][i]) + " ");
+			}
+			text.setLength(text.length() - 1);
+			text.append("\n");
+		}
+		text.append("Up\n");
+		for (int i = 0; i < 10; i++) {
+			for (int j = 0; j < 15; j++) {
+				text.append(String.format("%.2f", qLearningUp[j][i]) + " ");
+			}
+			text.setLength(text.length() - 1);
+			text.append("\n");
+		}
+		text.append("Down\n");
+		for (int i = 0; i < 10; i++) {
+			for (int j = 0; j < 15; j++) {
+				text.append(String.format("%.2f", qLearningDown[j][i]) + " ");
+			}
+			text.setLength(text.length() - 1);
+			text.append("\n");
+		}
+		text.append("Left\n");
+		for (int i = 0; i < 10; i++) {
+			for (int j = 0; j < 15; j++) {
+				text.append(String.format("%.2f", qLearningLeft[j][i]) + " ");
+			}
+			text.setLength(text.length() - 1);
+			text.append("\n");
+		}
+		text.append("Right\n");
+		for (int i = 0; i < 10; i++) {
+			for (int j = 0; j < 15; j++) {
+				text.append(String.format("%.2f", qLearningRight[j][i]) + " ");
+			}
+			text.setLength(text.length() - 1);
+			text.append("\n");
+		}
+		writer.write(text.toString());
+		writer.close();
+	}
 }

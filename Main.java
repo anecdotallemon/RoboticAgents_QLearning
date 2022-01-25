@@ -1,32 +1,44 @@
+import java.io.File;
+import java.io.FileNotFoundException;
 import java.util.Random;
+import java.util.Scanner;
 
 /**
  * A Java program that implements a Q-learning algorithm to find the best path
  * towards the goal from either a given or random coordinate pair.
+ * 
+ * This program also implements both writing the Q Tables to a file (existing or
+ * not existing, and will ask before overwriting) and reading the Q Tables in from
+ * a pre-existing file.
  * 
  * @author AJ Moore
  * for Robotic Agents
  */
 public class Main {
 
-	public static void main(String[] args) {
+	public static void main(String[] args) throws FileNotFoundException {
 		State state = new State();
-		Node node = new Node();
-//		state.printState();
-		
+		Node node = new Node();		
 		
 		// =============
 		// Instructions:
+		// Comment or uncomment whichever lines you wish to see.
 		// =============
 		
 		// Generate Q Tables
 		generateQTables(state, node);
 		
-		// Print them if you want (uncomment me!)
+		// Or generate Q Tables from pre-existing file
+//		generateQTablesFromFile(node, "qtables");
+		
+		// Print the Q Tables to verify accuracy
 		printQTables(node);
 		
+		// Write the Q Tables to a file to access later
+		writeQTables(node, "qtables");
+		
 		// Get a random solution
-//		getRandomSolution(state, node);
+		getRandomSolution(state, node);
 		
 		// Get a solution for given input x and y
 //		int x = ;
@@ -42,18 +54,85 @@ public class Main {
 	 * @param node the Node object
 	 */
 	public static void printQTables(Node node) {
-		System.out.println("============== Q Table: Stay Action ================");
+		System.out.println("========================================= Q Table: Stay Action ==========================================");
 		node.printQTableStay();
-		System.out.println("============== Q Table: Up Action ================");
+		System.out.println("========================================== Q Table: Up Action ===========================================");
 		node.printQTableUp();		
-		System.out.println("============== Q Table: Down Action ================");
+		System.out.println("========================================= Q Table: Down Action ==========================================");
 		node.printQTableDown();		
-		System.out.println("============== Q Table: Left Action ================");
+		System.out.println("========================================= Q Table: Left Action ==========================================");
 		node.printQTableLeft();		
-		System.out.println("============== Q Table: Right Action ================");
+		System.out.println("========================================= Q Table: Right Action =========================================");
 		node.printQTableRight();
 	}
 	
+	
+	/**
+	 * Helper method to write Q Tables to a file
+	 * @param node the node with the Q Tables
+	 * @param filename the name of the file to be included - should not include .txt at the end
+	 * @throws FileNotFoundException if the file is not created properly
+	 */
+	public static void writeQTables(Node node, String filename) throws FileNotFoundException {
+		node.writeQTablesToFile(filename);
+	}
+	
+	
+	/**
+	 * This method will generate Q Tables from a saved file.
+	 * @param node the node object to generate the Q Tables for
+	 * @param filename the name of the file to be accessed - without the .txt
+	 * @throws FileNotFoundException if the file is not available
+	 */
+	public static void generateQTablesFromFile(Node node, String filename) throws FileNotFoundException {
+		File file = null;
+		try {
+			file = new File(filename + ".txt");
+		} catch (Exception e) {
+			System.out.println("An error occurred getting the Q Tables file.");
+			e.printStackTrace();
+		}
+		Scanner scan = new Scanner(file);
+		scan.nextLine(); // tossing first line
+		for (int i = 0; i < 10; i++) {
+			for (int j = 0; j < 15; j++) {
+				node.updateQValue(j, i, scan.nextDouble(), 0);
+			}
+		}
+		while(!scan.hasNextDouble()) {
+			scan.nextLine();
+		}
+		for (int i = 0; i < 10; i++) {
+			for (int j = 0; j < 15; j++) {
+				node.updateQValue(j, i, scan.nextDouble(), 1);
+			}
+		}
+		while(!scan.hasNextDouble()) {
+			scan.nextLine();
+		}
+		for (int i = 0; i < 10; i++) {
+			for (int j = 0; j < 15; j++) {
+				node.updateQValue(j, i, scan.nextDouble(), 2);
+			}
+		}
+		while(!scan.hasNextDouble()) {
+			scan.nextLine();
+		}		
+		for (int i = 0; i < 10; i++) {
+			for (int j = 0; j < 15; j++) {
+				node.updateQValue(j, i, scan.nextDouble(), 3);
+			}
+		}
+		while(!scan.hasNextDouble()) {
+			scan.nextLine();
+		}
+		for (int i = 0; i < 10; i++) {
+			for (int j = 0; j < 15; j++) {
+				node.updateQValue(j, i, scan.nextDouble(), 4);
+			}
+		}
+		scan.close();
+	}
 	
 
 	/**
@@ -99,10 +178,7 @@ public class Main {
 		}
 		
 		solution.setStart(node.x, node.y);
-//		int i = 0;
-		// grab best direction from q table until goal is found
 		while (!node.checkIfGoal()) {
-//			i++;
 			int goNext = node.getBestAction();
 			if (goNext == 1) {
 				solution.updateSolution(node.x, node.y, goNext);
@@ -120,12 +196,6 @@ public class Main {
 				solution.updateSolution(node.x, node.y, goNext);
 				node.x++;
 			}
-			// implemented because my discount was too high and the top left corner was getting stuck
-//			if (i > 30) {
-//				System.out.println("Stuck, couldn't find solution!");
-//				solution.printSolution();
-//				return;
-//			}
 		}
 		solution.printSolution();
 	}
@@ -178,11 +248,9 @@ public class Main {
 	public static void playGame(State state, Node node) {
 		Random random = new Random();	
 		while (!node.checkIfGoal()) {
-			int dir = random.nextInt(node.possibleActions().length);
-//			System.out.println(dir);
-			double qValue = node.calculateQValue(node.x, node.y, dir);
-//			System.out.println(qValue);
-			node.updateQValue(node.x, node.y, qValue, dir);
+			int[] possible = node.possibleActions();
+			int dir = possible[random.nextInt(possible.length)];
+			node.calculateQValue(node.x, node.y, dir);
 			if (dir == 1) {
 				if (node.y > 0) { node.y--;	}
 			}
@@ -195,7 +263,6 @@ public class Main {
 			if (dir == 4) {
 				if (node.x < 14) { node.x++;	}
 			}
-//			System.out.println("Node coordinates: " + node.x + ", " + node.y);
 		}
 	}
 

@@ -1,11 +1,15 @@
 
 public class State {
-	int[][] stateRewardDown = new int[15][10];
-	int[][] stateRewardUp = new int[15][10];
-	int[][] stateRewardLeft = new int[15][10];
-	int[][] stateRewardRight = new int[15][10];
-	int[][] stateRewardStay = new int[15][10];
+	private int[][] stateRewardDown = new int[15][10];
+	private int[][] stateRewardUp = new int[15][10];
+	private int[][] stateRewardLeft = new int[15][10];
+	private int[][] stateRewardRight = new int[15][10];
+	private int[][] stateRewardStay = new int[15][10];
 	
+	/**
+	 * Constructor for the State class. Initializes all up, down, left,
+	 * and right values to -1 and all stay values to 0.
+	 */
 	public State() {
 		for (int i = 0; i < 15; i++) {
 			for (int j = 0; j < 10; j++) {
@@ -23,22 +27,52 @@ public class State {
 		stateRewardRight[11][7] = 100;
 	}
 
+	/**
+	 * Returns the reward value of moving down from this position.
+	 * @param a the x coordinate
+	 * @param b the y coordinate
+	 * @return the integer reward value
+	 */
 	public int getStateRewardDown(int a, int b) {
 		return stateRewardDown[a][b];
 	}
 
+	/**
+	 * Returns the reward value of moving up from this position.
+	 * @param a the x coordinate
+	 * @param b the y coordinate
+	 * @return the integer reward value
+	 */
 	public int getStateRewardUp(int a, int b) {
 		return stateRewardUp[a][b];
 	}
 	
+	/**
+	 * Returns the reward value of moving left from this position.
+	 * @param a the x coordinate
+	 * @param b the y coordinate
+	 * @return the integer reward value
+	 */
 	public int getStateRewardLeft(int a, int b) {
 		return stateRewardLeft[a][b];
 	}
 	
+	/**
+	 * Returns the reward value of moving right from this position.
+	 * @param a the x coordinate
+	 * @param b the y coordinate
+	 * @return the integer reward value
+	 */
 	public int getStateRewardRight(int a, int b) {
 		return stateRewardRight[a][b];
 	}
 
+	/**
+	 * Returns the reward value of staying in this position.
+	 * @param a the x coordinate
+	 * @param b the y coordinate
+	 * @return the integer reward value
+	 */
 	public int getStateRewardStay(int a, int b) {
 		return stateRewardStay[a][b];
 	}
